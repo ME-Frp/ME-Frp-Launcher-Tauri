@@ -1,0 +1,239 @@
+<template>
+  <div class="auth-container">
+    <NCard class="auth-card">
+      <div class="auth-header">
+        <div class="logo-link">
+          <div class="title-with-icon" style="user-select: none">
+            <NIcon size="32" :component="KeyOutline"/>
+            <h2>找回 ME Frp 账户</h2>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 邮箱验证码表单 -->
+      <NForm ref="emailFormRef" :model="emailForm" :rules="emailRules" style="user-select: none">
+        <NFormItem path="email" label="邮箱">
+          <NInputGroup>
+            <NInput v-model:value="emailForm.email" placeholder="请输入邮箱" :disabled="emailCodeCountdown > 0"/>
+            <NButton type="primary" ghost :disabled="isEmailCodeSending || emailCodeCountdown > 0" 
+              @click="handleSendEmailCode" :loading="isEmailCodeSending">
+              {{ emailCodeButtonText }}
+            </NButton>
+          </NInputGroup>
+        </NFormItem>
+      </NForm>
+
+      <!-- 重置密码表单 -->
+      <NForm ref="resetFormRef" :model="resetForm" :rules="resetRules" style="user-select: none">
+        <NFormItem path="username" label="用户名">
+          <NInput v-model:value="resetForm.username" placeholder="请输入用户名" />
+        </NFormItem>
+        <NFormItem path="emailCode" label="验证码">
+          <NInput v-model:value="resetForm.emailCode" placeholder="请输入邮箱验证码" />
+        </NFormItem>
+        <NFormItem path="password" label="新密码">
+          <NInput v-model:value="resetForm.password" type="password" placeholder="请输入新密码" show-password-on="click" />
+        </NFormItem>
+        <NButton type="primary" block secondary strong @click="handleSubmit" :loading="isSubmitting">
+          重置密码
+        </NButton>
+        <div class="form-footer login-link">
+          <span>记起密码了？</span>
+          <RouterLink to="/login">返回登录</RouterLink>
+        </div>
+      </NForm>
+
+    </NCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { NForm, NFormItem, NInput, NButton, NCard, NIcon, NInputGroup, type FormRules, useMessage, type FormInst } from 'naive-ui'
+import { KeyOutline } from '@vicons/ionicons5'
+import { PublicApi } from '../../shared/api/public'
+
+const router = useRouter()
+const message = useMessage()
+
+const emailFormRef = ref<FormInst | null>(null)
+const resetFormRef = ref<FormInst | null>(null)
+
+const emailForm = ref({
+  email: ''
+})
+
+const resetForm = ref({
+  username: '',
+  emailCode: '',
+  password: ''
+})
+
+const isEmailCodeSending = ref(false)
+const isSubmitting = ref(false)
+const emailCodeCountdown = ref(0)
+
+const emailCodeButtonText = computed(() => {
+  if (isEmailCodeSending.value) return '发送中...'
+  if (emailCodeCountdown.value > 0) return `${emailCodeCountdown.value}s后重试`
+  return '获取验证码'
+})
+
+const emailRules: FormRules = {
+  email: {
+    required: true,
+    message: '请输入邮箱',
+    trigger: 'blur',
+    type: 'email'
+  }
+}
+
+const resetRules: FormRules = {
+  username: {
+    required: true,
+    message: '请输入用户名',
+    trigger: 'blur'
+  },
+  emailCode: {
+    required: true,
+    message: '请输入验证码',
+    trigger: 'blur'
+  },
+  password: {
+    required: true,
+    message: '请输入新密码',
+    trigger: 'blur'
+  }
+}
+
+const startEmailCodeCountdown = () => {
+  emailCodeCountdown.value = 60
+  const timer = setInterval(() => {
+    emailCodeCountdown.value--
+    if (emailCodeCountdown.value <= 0) {
+      clearInterval(timer)
+    }
+  }, 1000)
+}
+
+const handleSendEmailCode = async () => {
+  
+  try {
+    if (!emailForm.value.email) {
+      message.error('请输入邮箱')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailForm.value.email)) {
+      message.error('请输入有效的邮箱地址')
+      return
+    }
+    isEmailCodeSending.value = true
+    
+    const response = await PublicApi.getIForgotEmailCode(emailForm.value.email)
+    if (response.data.code === 200) {
+      message.success(response.data.message)
+      startEmailCodeCountdown()
+    } else {
+      message.error(response.data.message)
+    }
+  } catch (error: any) {
+    if (error?.response?.data?.message) {
+      message.error(error.response.data.message)
+    }
+  } finally {
+    isEmailCodeSending.value = false
+  }
+}
+
+const handleSubmit = async () => {
+  if (!resetFormRef.value) return
+  
+  try {
+    await resetFormRef.value.validate()
+    isSubmitting.value = true
+    
+    const response = await PublicApi.iForgot({
+      username: resetForm.value.username,
+      email: emailForm.value.email,
+      password: resetForm.value.password,
+      emailCode: resetForm.value.emailCode
+    })
+    
+    if (response.data.code === 200) {
+      message.success('密码重置成功')
+      router.push('/login')
+    } else {
+      message.error(response.data.message || '密码重置失败')
+    }
+  } catch (error: any) {
+    if (error?.response?.data?.message) {
+      message.error(error.response.data.message)
+    } else {
+      message.error('操作失败, 请重试')
+    }
+  } finally {
+    isSubmitting.value = false
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.title-with-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-with-icon :deep(svg) {
+  color: #2196F3;
+}
+
+.logo-link h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  background: linear-gradient(45deg, #2196F3, #42A5F5);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 0;
+  gap: 8px;
+}
+
+.login-link span {
+  color: var(--n-text-color-2);
+}
+
+.login-link a {
+  color: #2196F3;
+  text-decoration: none;
+}
+</style>

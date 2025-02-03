@@ -1,0 +1,58 @@
+@use '../variables' as *;
+
+.logs {
+  .single-card {
+    margin-bottom: 20px;
+  }
+
+  .logs-content {
+    background-color: var(--n-card-color);
+    border-radius: 6px;
+  }
+
+  .empty-logs {
+    padding: 32px 0;
+  }
+
+  .log-item {
+    padding: 5px 0px;
+    line-height: 1.6;
+    transition: background-color 0.3s ease;
+    
+    &:hover {
+      background-color: var(--n-table-color-striped);
+    }
+    
+    .time {
+      color: var(--n-text-color-3);
+      margin-right: 8px;
+      font-size: 0.9em;
+    }
+    
+    .message {
+      color: var(--n-text-color);
+      
+      :deep(span) {
+        font-family: inherit;
+      }
+      
+      :deep(a) {
+        color: $primary-color;
+        text-decoration: none;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: $primary-hover;
+        }
+      }
+      
+      :deep(.font-bold) {
+        font-weight: bold;
+      }
+    }
+  }
+
+  :deep(.dark) .message span {
+    background-color: transparent;
+  }
+} 
