@@ -98,28 +98,53 @@ const refreshLogs = async () => {
     logs.value = [
       {
         time: Date.now(),
+        level: 'INFO', 
+        message: '开始启动 ME Frp 隧道, 配置文件 [.\\frpc.toml]'
+      },
+      {
+        time: Date.now() - 100,
         level: 'INFO',
-        message: '这是一条 INFO 日志'
+        message: '尝试连接到节点...'
       },
       {
-        time: Date.now() - 1000,
-        level: 'WARN',
-        message: '\x1b[33m配置文件不存在\x1b[0m，使用\x1b[36m默认配置\x1b[0m'
-      },
-      {
-        time: Date.now() - 2000,
-        level: 'ERROR',
-        message: '\x1b[31m连接服务器失败\x1b[0m: \x1b[1mConnection refused\x1b[0m'
-      },
-      {
-        time: Date.now() - 3000,
+        time: Date.now() - 200,
         level: 'INFO',
-        message: '正在运行隧道: \x1b[32mProxy Name\x1b[0m [\x1b[36m运行中\x1b[0m]'
+        message: '\x1b[32m[1549a15025578255]\x1b[0m 登录节点成功, RunId: [\x1b[36m1549a15025578255\x1b[0m]'
       },
       {
-        time: Date.now() - 4000,
-        level: 'DEBUG',
-        message: '调试信息: \x1b[34m这是调试信息\x1b[0m'
+        time: Date.now() - 300,
+        level: 'INFO',
+        message: '\x1b[32m[1549a15025578255]\x1b[0m 隧道 [\x1b[36m**************.111\x1b[0m] 登记成功'
+      },
+      {
+        time: Date.now() - 400,
+        level: 'INFO',
+        message: '\x1b[32m[1549a15025578255]\x1b[0m 启动 [tcp] 隧道 [\x1b[36m**************.111\x1b[0m] 成功, 您可以使用 [\x1b[33m111.222.222.222:6000\x1b[0m] 访问您的服务'
+      },
+      {
+        time: Date.now() - 500,
+        level: 'INFO',
+        message: '开始启动 ME Frp 隧道, 当前正在使用快捷启动'
+      },
+      {
+        time: Date.now() - 600,
+        level: 'INFO',
+        message: '尝试连接到节点...'
+      },
+      {
+        time: Date.now() - 700,
+        level: 'INFO', 
+        message: '\x1b[32m[**************-32d4c14d2c6c5340]\x1b[0m 登录节点成功, RunId: [\x1b[36m**************-32d4c14d2c6c5340\x1b[0m]'
+      },
+      {
+        time: Date.now() - 800,
+        level: 'INFO',
+        message: '\x1b[32m[**************-32d4c14d2c6c5340]\x1b[0m 隧道 [\x1b[36m**************.mcslfuture\x1b[0m] 登记成功'
+      },
+      {
+        time: Date.now() - 900,
+        level: 'INFO',
+        message: '\x1b[32m[**************-32d4c14d2c6c5340]\x1b[0m 启动 [tcp] 隧道 [\x1b[36m**************.mcslfuture\x1b[0m] 成功, 您可以使用 [\x1b[33m111.222.222.222:63649\x1b[0m] 访问您的服务'
       }
     ]
     scrollToBottom()
