@@ -41,6 +41,12 @@
             show-password-on="click"
           />
         </NFormItem>
+        <div class="form-footer">
+          <span>注册即代表您同意我们的</span>
+          <a href="https://mefrp-preview.lxhtt.cn/terms" target="_blank">服务条款</a>
+          <span>与</span>
+          <a href="https://mefrp-preview.lxhtt.cn/privacy" target="_blank">隐私政策</a>
+        </div>
         <NButton 
           type="primary" 
           block 
@@ -194,61 +200,5 @@ const handleSubmit = async () => {
 </script>
 
 <style lang="scss" scoped>
-.auth-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-}
-
-.auth-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.logo-link {
-  text-decoration: none;
-  color: inherit;
-}
-
-.logo-link h2 {
-  margin: 0 0 0px;
-  font-size: 1.5rem;
-  background: linear-gradient(45deg, #2196F3, #42A5F5);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.form-footer {
-  display: flex;
-  justify-content: center;
-  margin: 16px 0 0;
-  gap: 8px;
-}
-
-.login-link span {
-  color: var(--n-text-color-2);
-}
-
-.login-link a {
-  color: #2196F3;
-  text-decoration: none;
-}
-
-.title-with-icon {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-}
-
-.title-with-icon :deep(svg) {
-  color: #2196F3;
-}
+@use '../../assets/styles/auth/register.scss';
 </style>

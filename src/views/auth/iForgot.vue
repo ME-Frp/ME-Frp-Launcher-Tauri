@@ -4,18 +4,18 @@
       <div class="auth-header">
         <div class="logo-link">
           <div class="title-with-icon" style="user-select: none">
-            <NIcon size="32" :component="KeyOutline"/>
+            <NIcon size="32" :component="KeyOutline" />
             <h2>找回 ME Frp 账户</h2>
           </div>
         </div>
       </div>
-      
+
       <!-- 邮箱验证码表单 -->
       <NForm ref="emailFormRef" :model="emailForm" :rules="emailRules" style="user-select: none">
         <NFormItem path="email" label="邮箱">
           <NInputGroup>
-            <NInput v-model:value="emailForm.email" placeholder="请输入邮箱" :disabled="emailCodeCountdown > 0"/>
-            <NButton type="primary" ghost :disabled="isEmailCodeSending || emailCodeCountdown > 0" 
+            <NInput v-model:value="emailForm.email" placeholder="请输入邮箱" :disabled="emailCodeCountdown > 0" />
+            <NButton type="primary" ghost :disabled="isEmailCodeSending || emailCodeCountdown > 0"
               @click="handleSendEmailCode" :loading="isEmailCodeSending">
               {{ emailCodeButtonText }}
             </NButton>
@@ -118,7 +118,7 @@ const startEmailCodeCountdown = () => {
 }
 
 const handleSendEmailCode = async () => {
-  
+
   try {
     if (!emailForm.value.email) {
       message.error('请输入邮箱')
@@ -129,7 +129,7 @@ const handleSendEmailCode = async () => {
       return
     }
     isEmailCodeSending.value = true
-    
+
     const response = await PublicApi.getIForgotEmailCode(emailForm.value.email)
     if (response.data.code === 200) {
       message.success(response.data.message)
@@ -148,18 +148,18 @@ const handleSendEmailCode = async () => {
 
 const handleSubmit = async () => {
   if (!resetFormRef.value) return
-  
+
   try {
     await resetFormRef.value.validate()
     isSubmitting.value = true
-    
+
     const response = await PublicApi.iForgot({
       username: resetForm.value.username,
       email: emailForm.value.email,
       password: resetForm.value.password,
       emailCode: resetForm.value.emailCode
     })
-    
+
     if (response.data.code === 200) {
       message.success('密码重置成功')
       router.push('/login')
@@ -179,61 +179,5 @@ const handleSubmit = async () => {
 </script>
 
 <style lang="scss" scoped>
-.auth-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-}
-
-.auth-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.logo-link {
-  text-decoration: none;
-  color: inherit;
-}
-
-.title-with-icon {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-}
-
-.title-with-icon :deep(svg) {
-  color: #2196F3;
-}
-
-.logo-link h2 {
-  font-size: 1.5rem;
-  margin: 0;
-  background: linear-gradient(45deg, #2196F3, #42A5F5);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.form-footer {
-  display: flex;
-  justify-content: center;
-  margin: 16px 0 0;
-  gap: 8px;
-}
-
-.login-link span {
-  color: var(--n-text-color-2);
-}
-
-.login-link a {
-  color: #2196F3;
-  text-decoration: none;
-}
+@use '../../assets/styles/auth/iForgot.scss';
 </style>
