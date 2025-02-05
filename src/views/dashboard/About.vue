@@ -41,9 +41,9 @@
             中国内网穿透联盟致力于聚集各个行业同僚, 可在 <a href="https://xn--v6qw21h0gd43u.xn--fiqs8s" target="_blank">内网穿透.中国</a> 了解更多信息。
           </span><br>
           <span>
-            如需了解我们的相关规定, 请访问相应链接: <a href="https://mefrp-preview.lxhtt.cn/terms" target="_blank">服务条款</a>&nbsp;
-              <a href="https://mefrp-preview.lxhtt.cn/privacy" target="_blank">隐私政策</a>&nbsp;
-                <a href="https://mefrp-preview.lxhtt.cn/content" target="_blank">内容策略</a>
+            如需了解我们的相关规定, 请访问相应链接: <a href="https://preview.mefrp.com/terms" target="_blank">服务条款</a>&nbsp;
+              <a href="https://preview.mefrp.com/privacy" target="_blank">隐私政策</a>&nbsp;
+                <a href="https://preview.mefrp.com/content" target="_blank">内容策略</a>
           </span>
         </div>
       </NSpace>

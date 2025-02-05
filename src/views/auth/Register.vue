@@ -43,9 +43,9 @@
         </NFormItem>
         <div class="form-footer">
           <span>注册即代表您同意我们的</span>
-          <a href="https://mefrp-preview.lxhtt.cn/terms" target="_blank">服务条款</a>
+          <a href="https://preview.mefrp.com/terms" target="_blank">服务条款</a>
           <span>与</span>
-          <a href="https://mefrp-preview.lxhtt.cn/privacy" target="_blank">隐私政策</a>
+          <a href="https://preview.mefrp.com/privacy" target="_blank">隐私政策</a>
         </div>
         <NButton 
           type="primary" 
