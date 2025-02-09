@@ -1,7 +1,7 @@
 import baseApi from './config'
 import type { ApiResponse } from './config';
 import type { UserInfo } from '../../types/authApi'
-import type { GetUsersData, FilterUsersArgs, UpdateUserArgs, GetNodesData, AddNodeArgs, GetNodesArgs, UpdateNodeArgs, FilterProxiesArgs, GetProxiesData, UpdateProxyArgs, UpdateSystemConfigArgs } from '../../types'
+import type { GetUsersData, FilterUsersArgs, UpdateUserArgs, GetNodesData, AddNodeArgs, GetNodesArgs, UpdateNodeArgs, FilterProxiesArgs, GetProxiesData, UpdateProxyArgs, UpdateSystemConfigArgs, DownloadSource, Group, Product } from '../../types'
 
 export const AdminApi = {
   // 搜索用户
@@ -107,5 +107,46 @@ export const AdminApi = {
   // 删除被禁用的邮箱提供商
   removeBannedEmailProvider: (provider: string) => {
     return baseApi.post<ApiResponse<void>>('/admin/system/bannedEmailProviders/delete', { provider })
+  },
+
+  // 更新产品版本
+  updateProduct(params: Product) {
+    return baseApi.post<ApiResponse<void>>('/admin/products/update', params)
+  },
+
+  // 添加产品
+  addProduct(product: Product) {
+    return baseApi.post<ApiResponse<void>>('/admin/products/add', { product })
+  },
+
+  // 删除产品
+  deleteProduct(productId: string) {
+    return baseApi.post<ApiResponse<void>>('/admin/products/delete', { productId })
+  },
+
+  // 下载源相关
+  addDownloadSource(params: { source: DownloadSource }) {
+    return baseApi.post<ApiResponse<void>>('/admin/downloadSources/add', params)
+  },
+
+  deleteDownloadSource(sourceId: string) {
+    return baseApi.post<ApiResponse<void>>('/admin/downloadSources/delete', { sourceId })
+  },
+
+  updateDownloadSource(params: { source: DownloadSource }) {
+    return baseApi.post<ApiResponse<void>>('/admin/downloadSources/update', params)
+  },
+
+  // 用户组相关
+  addGroup(group: Group) {
+    return baseApi.post<ApiResponse<void>>('/admin/user/groups/add', group)
+  },
+
+  deleteGroup(name: string) {
+    return baseApi.post<ApiResponse<void>>('/admin/user/groups/delete', { name })
+  },
+
+  updateGroup(group: Group) {
+    return baseApi.post<ApiResponse<void>>('/admin/user/groups/update', group)
   }
 }

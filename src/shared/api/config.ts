@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
     data: T;
 }
 
-let baseURL = "https://preapi.mefrp.com/api";
+let baseURL: string;
 switch (process.env.NODE_ENV) {
     case 'development':
         baseURL = "http://localhost:8080/api";
@@ -49,8 +49,7 @@ baseApi.interceptors.response.use(
             switch (error.response.status) {
                 case 401:
                     localStorage.removeItem('token');
-                    window.location.href = '/login';
-                    window.location.reload();
+                    window.location.href = '/auth/login';
                     break;
                 default:
                     console.error('API Error:', error.response.data);

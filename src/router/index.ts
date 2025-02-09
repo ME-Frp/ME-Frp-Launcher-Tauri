@@ -109,6 +109,15 @@ const router = createRouter({
           }
         },
         {
+          path: 'products',
+          name: 'admin-products',
+          component: () => import('../views/dashboard/admin/Products.vue'),
+          meta: {
+            title: '产品管理',
+            requiresAdmin: true
+          }
+        },
+        {
           path: 'system',
           name: 'admin-system',
           component: () => import('../views/dashboard/admin/System.vue'),

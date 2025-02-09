@@ -1,5 +1,5 @@
 import { h, Component } from 'vue'
-import { HomeOutline, AddCircleOutline, AppsOutline, IdCardOutline, CreateOutline, InformationCircleOutline, StatsChartOutline, PeopleOutline, CloudyOutline, ConstructOutline, TerminalOutline } from '@vicons/ionicons5' 
+import { HomeOutline, AddCircleOutline, AppsOutline, SettingsOutline, CreateOutline, InformationCircleOutline, StatsChartOutline, PeopleOutline, CloudyOutline, ConstructOutline, TerminalOutline, BuildOutline } from '@vicons/ionicons5' 
 import { NIcon, type MenuOption } from 'naive-ui'
 
 const baseMenuOptions: MenuOption[] = [
@@ -34,8 +34,8 @@ const baseMenuOptions: MenuOption[] = [
     link: '/node-status',
   },
   {
-    label: '用户中心',
-    icon: renderIcon(IdCardOutline),
+    label: '程序设置',
+    icon: renderIcon(SettingsOutline),
     key: 'profile',
     link: '/profile',
   },
@@ -69,6 +69,12 @@ const adminMenuOptions: MenuOption = {
       key: 'admin-proxies',
       link: '/admin/proxies',
       icon: renderIcon(AppsOutline)
+    },
+    {
+      label: '产品管理',
+      key: 'admin-products',
+      link: '/admin/products',
+      icon: renderIcon(BuildOutline)
     },
     {
       label: '系统管理',
