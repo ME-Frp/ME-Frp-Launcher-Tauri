@@ -514,11 +514,6 @@ const dropdownOptions = (proxy: Proxy) => [
     icon: renderIcon(CreateOutline)
   },
   {
-    label: '刷新状态',
-    key: 'refresh',
-    icon: renderIcon(RefreshOutline)
-  },
-  {
     label: '强制下线',
     key: 'kickProxy',
     icon: renderIcon(PowerOutline)
@@ -538,16 +533,6 @@ const dropdownOptions = (proxy: Proxy) => [
     icon: renderIcon(TrashOutline)
   }
 ]
-
-const handleRefreshStatus = async (proxy: Proxy) => {
-  try {
-    await AuthApi.refreshProxyStatus(proxy.proxyId)
-    message.success('刷新状态成功')
-    handleRefresh()
-  } catch (error: any) {
-    message.error(error?.response?.data?.message || '刷新状态失败')
-  }
-}
 
 const handleToggleClick = (proxy: Proxy) => {
   proxyToOperate.value = proxy
@@ -656,9 +641,6 @@ const handleSelect = (key: string, proxy: Proxy) => {
       break
     case 'edit':
       handleEdit(proxy)
-      break
-    case 'refresh':
-      handleRefreshStatus(proxy)
       break
     case 'kickProxy':
       handleKickClick(proxy)
