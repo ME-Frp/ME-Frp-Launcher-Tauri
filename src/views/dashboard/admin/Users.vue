@@ -124,9 +124,10 @@
       </NForm>
       <template #footer>
         <NSpace justify="end">
-          <NButton @click="showEditModal = false">取消</NButton>
+          <NButton size="small" @click="showEditModal = false">取消</NButton>
           <NButton
             type="primary"
+            size="small"
             :loading="submitting"
             @click="handleEditSubmit"
           >
@@ -404,6 +405,7 @@ const handleEditSubmit = () => {
     if (!errors) {
       submitting.value = true
       try {
+        editForm.value.traffic *= 1024
         editForm.value.outBound *= 128
         editForm.value.inBound *= 128
         await AdminApi.updateUser(editForm.value)
@@ -431,7 +433,7 @@ const handleEdit = async (user: UserInfo) => {
         group: userDetail.group,
         status: userDetail.status,
         isRealname: userDetail.isRealname,
-        traffic: userDetail.traffic,
+        traffic: userDetail.traffic / 1024,
         outBound: userDetail.outBound / 128,
         inBound: userDetail.inBound / 128,
         maxProxies: userDetail.maxProxies

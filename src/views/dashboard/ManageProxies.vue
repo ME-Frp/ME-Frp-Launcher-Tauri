@@ -70,26 +70,46 @@
                 </span>
               </div>
               <div class="info-item">
-                <span class="label">协议:</span>
+                <span class="label">协议：</span>
                 <span class="value">{{ proxy.proxyType.toUpperCase() }}</span>
               </div>
               <div class="info-item">
-                <span class="label">远程端口：</span>
-                <span class="value">{{ proxy.remotePort }}</span>
+                <span class="label">远程地址：</span>
+                <span class="value">
+                  <template v-if="proxy.proxyType === 'http' || proxy.proxyType === 'https'">
+                    <NSpace>
+                      <NTag v-for="domain in JSON.parse(proxy.domain || '[]')" :key="domain"
+                        type="info" 
+                        style="cursor: pointer"
+                        @click="() => openUrl(proxy.proxyType, domain)"
+                      >
+                        {{ domain }}
+                      </NTag>
+                    </NSpace>
+                  </template>
+                  <template v-else>
+                    <span>{{ proxy.remotePort }}</span>
+                  </template>
+                </span>
               </div>
               <div class="info-item" style="display: flex; align-items: flex-start">
                 <span class="label">节点：</span>
-                <span class="value" style="flex: 1; word-break: break-all;">{{ getNodeLabel(proxy.nodeId) }}</span>
+                <span class="value" style="flex: 1; word-break: break-all;">
+                  <NSpace :size="4" align="center">
+                    <NTag type="info" size="small"># {{ proxy.nodeId }}</NTag>
+                    {{ nodeOptions.find(node => node.value === proxy.nodeId)?.label || '未知节点' }}
+                  </NSpace>
+                </span>
               </div>
             </div>
             <div class="proxy-actions">
-              <NButton secondary type="primary" size="small">
+              <NButton secondary type="primary" size="small" :disabled="proxy.isOnline || proxy.isDisabled || proxy.isBanned" @click="handleStartProxy(proxy)">
                 <template #icon>
                   <NIcon>
                     <PlayOutline />
                   </NIcon>
                 </template>
-                启动
+                {{ proxy.isOnline ? '已启动' : '启动' }}
               </NButton>
               <NDropdown :options="dropdownOptions(proxy)" @select="key => handleSelect(key, proxy)" trigger="click">
                 <NButton tertiary size="small">
@@ -165,14 +185,30 @@
           <span class="label">节点名称：</span>
           <span class="value">{{ getNodeLabel(selectedProxy.nodeId).split(' - ')[1] }}</span>
         </div>
-        <div class="modal-info-item">
-          <span class="label">节点主机名：</span>
-          <span class="value">{{ nodeOptions.find(node => node.value === selectedProxy?.nodeId)?.hostname || '-' }}</span>
-        </div>
-        <div class="modal-info-item">
-          <span class="label">远程端口：</span>
-          <span class="value">{{ selectedProxy.remotePort }}</span>
-        </div>
+        <template v-if="selectedProxy.proxyType === 'http' || selectedProxy.proxyType === 'https'">
+          <div class="modal-info-item">
+            <span class="label">绑定域名：</span>
+            <span class="value">
+              <NSpace>
+                <NTag v-for="domain in JSON.parse(selectedProxy.domain || '[]')" :key="domain"
+                  type="info" 
+                  style="cursor: pointer"
+                  @click="() => openUrl(selectedProxy.proxyType, domain)"
+                >
+                  {{ domain }}
+                </NTag>
+              </NSpace>
+            </span>
+          </div>
+        </template>
+        <template v-else>
+          <div class="modal-info-item">
+            <span class="label">链接地址：</span>
+            <span class="value">
+              {{ nodeOptions.find(node => node.value === selectedProxy?.nodeId)?.hostname }}:{{ selectedProxy.remotePort }}
+            </span>
+          </div>
+        </template>
         <div class="modal-info-item">
           <span class="label">上次启动时间：</span>
           <span class="value">{{ selectedProxy.lastStartTime || '从未启动' }}</span>
@@ -439,23 +475,9 @@ const fetchNodes = async () => {
 fetchNodes()
 handleRefresh()
 
-function renderIcon(icon: any) {
-  return () => h(NIcon, null, { default: () => h(icon) })
-}
-
 const showToggleModal = ref(false)
 const showKickModal = ref(false)
 const proxyToOperate = ref<Proxy | null>(null)
-
-const toggleModalTitle = computed(() => {
-  if (!proxyToOperate.value) return ''
-  return proxyToOperate.value.isDisabled ? '启用隧道' : '禁用隧道'
-})
-
-const toggleModalContent = computed(() => {
-  if (!proxyToOperate.value) return ''
-  return proxyToOperate.value.isDisabled ? '确认要启用此隧道吗？' : '确认要禁用此隧道吗？'
-})
 
 const dropdownOptions = (proxy: Proxy): DropdownOption[] => [
   {
@@ -534,11 +556,6 @@ const handleToggleConfirm = async () => {
     loading.value = false
     showToggleModal.value = false
   }
-}
-
-const handleKickClick = (proxy: Proxy) => {
-  proxyToOperate.value = proxy
-  showKickModal.value = true
 }
 
 const handleKickConfirm = async () => {
@@ -632,6 +649,21 @@ const handleGetFreePortForEdit = async () => {
   }
 }
 
+const handleStartProxy = async (proxy: Proxy) => {
+  // 暂时禁用启动功能
+  message.info('启动功能暂未实现')
+  return
+  
+  // if (proxy.isOnline || proxy.isDisabled || proxy.isBanned) return
+  // try {
+  //   await AuthApi.startProxy(proxy.proxyId)
+  //   message.success('启动隧道成功')
+  //   handleRefresh()
+  // } catch (error: any) {
+  //   message.error(error?.response?.data?.message || '启动隧道失败')
+  // }
+}
+
 const columns = [
   {
     title: 'ID',
@@ -658,7 +690,27 @@ const columns = [
     title: '远程端口',
     key: 'remotePort',
     render(row) {
-      return h('div', { style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, row.remotePort)
+      if (row.proxyType === 'http' || row.proxyType === 'https') {
+        try {
+          const domains = JSON.parse(row.domain || '[]')
+          return h(NSpace, { size: 4 }, {
+            default: () => domains.map((domain: string) => 
+              h(NTag, {
+                type: 'info',
+                style: 'cursor: pointer',
+                onClick: () => {
+                  openUrl(row.proxyType, domain)
+                }
+              }, { default: () => domain })
+            )
+          })
+        } catch {
+          return h('div', { style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, '-')
+        }
+      }
+      return h('div', { 
+        style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+      }, row.remotePort)
     }
   },
   {
@@ -712,6 +764,10 @@ const columns = [
     }
   }
 ]
+
+const openUrl = (protocol: string, domain: string) => {
+  window.open(`${protocol}://${domain}`, '_blank')
+}
 </script>
 
 <style lang="scss" scoped>

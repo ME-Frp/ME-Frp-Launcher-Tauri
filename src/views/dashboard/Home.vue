@@ -39,7 +39,7 @@ const router = useRouter()
 const notices = ref<string>('')
 const username = localStorage.getItem('username')
 const userInfoGridRef = ref<null | { userInfo: { group: string } }>(null)
-const userGroup = computed(() => userInfoGridRef.value?.userInfo?.group || '')
+const userGroup = localStorage.getItem('group')
 
 // 配置 marked
 marked.setOptions({
@@ -67,7 +67,7 @@ const fetchNotice = async (): Promise<void> => {
     if (data.data.code !== 200) {
       throw new Error('获取公告失败')
     }
-    notices.value = data.data.data
+    notices.value = data.data.data.replaceAll('](/dashboard/', '](/#/')
   } catch (error) {
     console.error('获取公告失败:', error)
   }

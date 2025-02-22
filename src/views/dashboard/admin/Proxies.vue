@@ -90,64 +90,8 @@
           </NFormItem>
         </NForm>
       <template #action>
-        <NButton secondary size="small" @click="showEditModal = false">取消</NButton>
-        <NButton secondary size="small" type="primary" :loading="submitting" @click="handleEditSubmit">确定</NButton>
-      </template>
-    </NModal>
-
-    <!-- 下线确认模态框 -->
-    <NModal v-model:show="showKickModal" preset="dialog" title="确认下线">
-      <template #default>
-        确认要强制下线此隧道吗？
-      </template>
-      <template #action>
-        <NButton secondary size="small" @click="showKickModal = false">取消</NButton>
-        <NButton secondary size="small" type="info" :loading="loading" @click="handleKickProxy(currentProxy)">确定</NButton>
-      </template>
-    </NModal>
-
-    <!-- 启用/禁用确认模态框 -->
-    <NModal v-model:show="showToggleModal" preset="dialog" :title="currentProxy?.isDisabled ? '确认启用' : '确认禁用'">
-      <template #default>
-        {{ currentProxy?.isDisabled ? '确认启用此隧道？' : '确认禁用此隧道？' }}
-      </template>
-      <template #action>
-        <NButton secondary size="small" @click="showToggleModal = false">取消</NButton>
-        <NButton 
-          secondary
-          size="small" 
-          :type="currentProxy?.isDisabled ? 'success' : 'warning'"
-          :loading="loading" 
-          @click="handleToggleProxy(currentProxy)"
-        >确定</NButton>
-      </template>
-    </NModal>
-
-    <!-- 封禁/解封确认模态框 -->
-    <NModal v-model:show="showBanModal" preset="dialog" :title="currentProxy?.isBanned ? '确认解封' : '确认封禁'">
-      <template #default>
-        {{ currentProxy?.isBanned ? '确认解封此隧道？' : '确认封禁此隧道？' }}
-      </template>
-      <template #action>
-        <NButton secondary size="small" @click="showBanModal = false">取消</NButton>
-        <NButton 
-          secondary
-          size="small" 
-          :type="currentProxy?.isBanned ? 'success' : 'warning'"
-          :loading="loading" 
-          @click="handleToggleBan(currentProxy)"
-        >确定</NButton>
-      </template>
-    </NModal>
-
-    <!-- 删除确认模态框 -->
-    <NModal v-model:show="showDeleteModal" preset="dialog" title="确认删除">
-      <template #default>
-        确认要删除此隧道吗？此操作不可恢复！
-      </template>
-      <template #action>
-        <NButton secondary size="small" @click="showDeleteModal = false">取消</NButton>
-        <NButton secondary size="small" type="error" :loading="loading" @click="handleDelete(currentProxy)">确定</NButton>
+        <NButton size="small" @click="showEditModal = false">取消</NButton>
+        <NButton size="small" type="primary" :loading="submitting" @click="handleEditSubmit">确定</NButton>
       </template>
     </NModal>
   </div>
@@ -155,14 +99,12 @@
 
 <script lang="ts" setup>
 import { ref, h, RendererElement, RendererNode, VNode } from 'vue'
-import { NCard, NSpace, NDataTable, NButton, NInput, NSelect, useMessage, NTag, NModal, NForm, NFormItem, NInputNumber, NDynamicTags, NDivider, NSwitch, NDropdown, NIcon } from 'naive-ui'
+import { NCard, NSpace, NDataTable, NButton, NPopconfirm, NInput, NSelect, useMessage, NTag, NModal, NForm, NFormItem, NInputNumber, NDynamicTags, NDivider, NSwitch } from 'naive-ui'
 import type { DataTableColumns, SelectOption, FormRules, FormInst } from 'naive-ui'
 import { AdminApi } from '../../../shared/api/admin'
 import { AuthApi } from '../../../shared/api/auth'
 import type { Proxy, FilterProxiesArgs, UserNode } from '../../../types'
 import { switchButtonRailStyle } from '../../../constants/theme'
-import { BanOutline, TrashOutline, EllipsisHorizontalCircleOutline, CreateOutline, PowerOutline, LogOutOutline } from '@vicons/ionicons5'
-import { DropdownMixedOption } from 'naive-ui/es/dropdown/src/interface'
 
 const message = useMessage()
 const loading = ref(false)
@@ -403,74 +345,13 @@ const renderStatus = (row: Proxy) => {
   return h(NSpace, { size: 4 }, { default: () => tags })
 }
 
-const handleToggleProxy = async (proxy: Proxy | null) => {
-  if (!proxy) return
+const handleToggleProxy = async (proxy: Proxy) => {
   try {
     await AdminApi.toggleProxy(proxy.proxyId, !proxy.isDisabled)
     message.success(proxy.isDisabled ? '启用隧道成功' : '禁用隧道成功')
-    showToggleModal.value = false
     loadData()
   } catch (error: any) {
     message.error(error?.response?.data?.message || '操作失败')
-  }
-}
-
-const dropdownOptions = (row: Proxy): DropdownMixedOption[] => [
-  {
-    label: '编辑',
-    key: 'edit',
-    disabled: false,
-    type: 'primary',
-    icon: () => h(NIcon, null, { default: () => h(CreateOutline) })
-  },
-  {
-    label: row.isDisabled ? '启用' : '禁用',
-    key: 'toggle',
-    disabled: false,
-    type: row.isDisabled ? 'success' : 'warning',
-    icon: () => h(NIcon, null, { default: () => h(PowerOutline) })
-  },
-  {
-    label: '下线',
-    key: 'kick',
-    disabled: !row.isOnline,
-    type: 'info',
-    icon: () => h(NIcon, null, { default: () => h(LogOutOutline) })
-  },
-  {
-    label: row.isBanned ? '解封' : '封禁',
-    key: 'ban',
-    disabled: false,
-    type: row.isBanned ? 'success' : 'warning',
-    icon: () => h(NIcon, null, { default: () => h(BanOutline) })
-  },
-  {
-    label: '删除',
-    key: 'delete',
-    disabled: false,
-    type: 'error',
-    icon: () => h(NIcon, null, { default: () => h(TrashOutline) })
-  }
-]
-
-const handleSelect = (key: string, row: Proxy) => {
-  currentProxy.value = row
-  switch (key) {
-    case 'edit':
-      handleEdit(row)
-      break
-    case 'toggle':
-      showToggleModal.value = true
-      break
-    case 'kick':
-      showKickModal.value = true
-      break
-    case 'ban':
-      showBanModal.value = true
-      break
-    case 'delete':
-      showDeleteModal.value = true
-      break
   }
 }
 
@@ -527,7 +408,7 @@ const columns: DataTableColumns<Proxy> = [
       if (['http', 'https'].includes(row.proxyType)) {
         const domains = (row.domain || '-')
           .replace(/[\[\]"]/g, '')
-          .split(';')
+          .split(',')
           .map(domain => domain.trim())
           .filter(Boolean)
         return h(NSpace, { vertical: true, size: 4 }, {
@@ -578,21 +459,105 @@ const columns: DataTableColumns<Proxy> = [
     title: '操作',
     key: 'actions',
     render(row) {
-      return h(NDropdown, {
-        trigger: 'click',
-        options: dropdownOptions(row),
-        onSelect: (key: string) => handleSelect(key, row),
-        placement: 'bottom'
-      }, {
-        default: () => h(NButton, {
-          text: true,
-          style: 'display: flex; align-items: center;'
-        }, {
-          icon: () => h(NIcon, null, {
-            default: () => h(EllipsisHorizontalCircleOutline)
-          })
-        })
-      })
+      return h(
+        NSpace,
+        {},
+        {
+          default: () => [
+            h(
+              NButton,
+              {
+                size: 'small',
+                onClick: () => handleEdit(row)
+              },
+              { default: () => '编辑' }
+            ),
+            h(
+              NPopconfirm,
+              {
+                onPositiveClick: () => handleToggleProxy(row),
+                positiveText: '确定',
+                negativeText: '取消'
+              },
+              {
+                default: () => row.isDisabled ? '确认启用此隧道？' : '确认禁用此隧道？',
+                trigger: () =>
+                  h(
+                    NButton,
+                    {
+                      size: 'small',
+                      secondary: true,
+                      type: row.isDisabled ? 'success' : 'warning',
+                    },
+                    { default: () => row.isDisabled ? '启用' : '禁用' }
+                  )
+              }
+            ),
+            h(
+              NPopconfirm,
+              {
+                onPositiveClick: () => handleKickProxy(row),
+                positiveText: '确定',
+                negativeText: '取消'
+              },
+              {
+                default: () => '确认强制下线此隧道？',
+                trigger: () =>
+                  h(
+                    NButton,
+                    {
+                      size: 'small',
+                      secondary: true,
+                      type: 'info',
+                      disabled: !row.isOnline
+                    },
+                    { default: () => '下线' }
+                  )
+              }
+            ),
+            h(
+              NPopconfirm,
+              {
+                onPositiveClick: () => handleToggleBan(row),
+                positiveText: '确定',
+                negativeText: '取消'
+              },
+              {
+                default: () => row.isBanned ? '确认解封此隧道？' : '确认封禁此隧道？',
+                trigger: () =>
+                  h(
+                    NButton,
+                    {
+                      size: 'small',
+                      type: row.isBanned ? 'success' : 'warning',
+                    },
+                    { default: () => row.isBanned ? '解封' : '封禁' }
+                  )
+              }
+            ),
+            h(
+              NPopconfirm,
+              {
+                onPositiveClick: () => handleDelete(row),
+                positiveText: '确定',
+                negativeText: '取消'
+              },
+              {
+                default: () => '确认删除此隧道？',
+                trigger: () =>
+                  h(
+                    NButton,
+                    {
+                      size: 'small',
+                      type: 'error'
+                    },
+                    { default: () => '删除' }
+                  )
+              }
+            )
+          ]
+        }
+      )
     }
   }
 ]
@@ -619,8 +584,7 @@ const handleFilterChange = () => {
   loadData()
 }
 
-const handleToggleBan = async (proxy: Proxy | null) => {
-  if (!proxy) return
+const handleToggleBan = async (proxy: Proxy) => {
   try {
     if (proxy.isBanned) {
       await AdminApi.unbanProxy(proxy.proxyId)
@@ -629,31 +593,26 @@ const handleToggleBan = async (proxy: Proxy | null) => {
       await AdminApi.banProxy(proxy.proxyId)
       message.success('封禁隧道成功')
     }
-    showBanModal.value = false
     loadData()
   } catch (error: any) {
     message.error(error?.response?.data?.message || '操作失败')
   }
 }
 
-const handleKickProxy = async (proxy: Proxy | null) => {
-  if (!proxy) return
+const handleKickProxy = async (proxy: Proxy) => {
   try {
     await AdminApi.kickProxy(proxy.proxyId)
     message.success('强制下线成功')
-    showKickModal.value = false
     loadData()
   } catch (error: any) {
     message.error(error?.response?.data?.message || '强制下线失败')
   }
 }
 
-const handleDelete = async (proxy: Proxy | null) => {
-  if (!proxy) return
+const handleDelete = async (proxy: Proxy) => {
   try {
     await AdminApi.deleteProxy(proxy.proxyId)
     message.success('删除隧道成功')
-    showDeleteModal.value = false
     loadData()
   } catch (error: any) {
     message.error(error?.response?.data?.message || '删除隧道失败')
@@ -812,17 +771,4 @@ const handleGetFreePortForEdit = async () => {
     gettingFreePort.value = false
   }
 }
-
-// 添加新的状态变量
-const showKickModal = ref(false)
-const showToggleModal = ref(false)
-const showBanModal = ref(false)
-const showDeleteModal = ref(false)
-const currentProxy = ref<Proxy | null>(null)
 </script>
-
-<style scoped>
-.n-button {
-  margin-right: 8px;
-}
-</style>
