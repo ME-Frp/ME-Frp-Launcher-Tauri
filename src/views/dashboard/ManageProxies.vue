@@ -117,56 +117,15 @@
 
       <!-- 列表视图 -->
       <template v-else>
-        <NTable v-if="filteredProxies.length">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>名称</th>
-              <th>类型</th>
-              <th>远程端口</th>
-              <th>节点</th>
-              <th>状态</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="proxy in filteredProxies" :key="proxy.proxyId">
-              <td>
-                <NTag type="info" size="medium"># {{ proxy.proxyId }}</NTag>
-              </td>
-              <td>{{ proxy.proxyName }}</td>
-              <td>{{ proxy.proxyType.toUpperCase() }}</td>
-              <td>{{ proxy.remotePort }}</td>
-              <td>{{ getNodeLabel(proxy.nodeId) }}</td>
-              <td>
-                <div style="display: flex; gap: 4px;">
-                  <NTag :type="proxy.isOnline ? 'success' : 'error'" size="small">
-                    {{ proxy.isOnline ? '在线' : '离线' }}
-                  </NTag>
-                  <NTag v-if="proxy.isBanned" type="error" size="small">
-                    已封禁
-                  </NTag>
-                  <NTag v-if="proxy.isDisabled" type="warning" size="small">
-                    已禁用
-                  </NTag>
-                </div>
-              </td>
-              <td>
-                <NDropdown :options="dropdownOptions(proxy)" @select="key => handleSelect(key, proxy)" trigger="click" placement="bottom">
-                  <div style="display: flex; align-items: center;">
-                    <NButton text>
-                      <template #icon>
-                        <NIcon>
-                          <EllipsisHorizontalCircleOutline />
-                        </NIcon>
-                      </template>
-                    </NButton>
-                  </div>
-                </NDropdown>
-              </td>
-            </tr>
-          </tbody>
-        </NTable>
+        <NDataTable v-if="filteredProxies.length" :columns="columns" :data="filteredProxies"
+          :style="{
+            '.n-data-table-td': {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '200px'
+            }
+          }" />
         <NEmpty v-else description="暂无隧道" class="no-data">
           <template #extra>
             <NButton secondary @click="() => router.push('/create-proxy')">
@@ -234,15 +193,39 @@
       </div>
     </NModal>
 
-    <!-- 删除确认弹窗 -->
-    <NModal v-model:show="showDeleteModal" preset="dialog" title="是否删除此隧道？" style="width: 400px">
-      <template #header>
-        <div>删除确认</div>
-      </template>
-        <p>确定要删除此隧道吗？此操作不可恢复。</p>
+    <!-- 禁用/启用确认弹窗 -->
+    <NModal v-model:show="showToggleModal" preset="dialog" 
+      :title="proxyToOperate?.isDisabled ? '启用隧道' : '禁用隧道'" 
+      style="width: 400px;"
+      :show-icon="false">
+      <div>确定要{{ proxyToOperate?.isDisabled ? '启用' : '禁用' }}隧道 "{{ proxyToOperate?.proxyName }}" 吗？</div>
       <template #action>
-        <NButton size="small" @click="showDeleteModal = false">取消</NButton>
-        <NButton size="small" type="error" :loading="loading" @click="handleDeleteConfirm">删除</NButton>
+        <NButton secondary size="small" @click="showToggleModal = false">取消</NButton>
+        <NButton secondary size="small" :type="proxyToOperate?.isDisabled ? 'success' : 'warning'" :loading="loading" @click="handleToggleConfirm">确定</NButton>
+      </template>
+    </NModal>
+
+    <!-- 强制下线确认弹窗 -->
+    <NModal v-model:show="showKickModal" preset="dialog" 
+      title="强制下线隧道" 
+      style="width: 400px;"
+      :show-icon="false">
+      <div>确定要强制下线隧道 "{{ proxyToOperate?.proxyName }}" 吗？</div>
+      <template #action>
+        <NButton secondary size="small" @click="showKickModal = false">取消</NButton>
+        <NButton secondary size="small" type="warning" :loading="loading" @click="handleKickConfirm">确定</NButton>
+      </template>
+    </NModal>
+
+    <!-- 删除确认弹窗 -->
+    <NModal v-model:show="showDeleteModal" preset="dialog" 
+      title="删除隧道" 
+      style="width: 400px;"
+      :show-icon="false">
+      <div>确定要删除隧道 "{{ proxyToOperate?.proxyName }}" 吗？此操作不可恢复！</div>
+      <template #action>
+        <NButton secondary size="small" @click="showDeleteModal = false">取消</NButton>
+        <NButton secondary size="small" type="error" :loading="loading" @click="handleDeleteClick">确定</NButton>
       </template>
     </NModal>
 
@@ -308,36 +291,12 @@
         <NButton size="small" type="primary" :loading="loading" @click="handleEditSubmit">确定</NButton>
       </template>
     </NModal>
-
-    <!-- 禁用/启用确认弹窗 -->
-    <NModal v-model:show="showToggleModal" preset="dialog" style="width: 400px">
-      <template #header>
-        <div>{{ toggleModalTitle }}</div>
-      </template>
-      <div>{{ toggleModalContent }}</div>
-      <template #action>
-        <NButton size="small" @click="showToggleModal = false">取消</NButton>
-        <NButton size="small" type="primary" :loading="loading" @click="handleToggleConfirm">确定</NButton>
-      </template>
-    </NModal>
-
-    <!-- 强制下线确认弹窗 -->
-    <NModal v-model:show="showKickModal" preset="dialog" style="width: 400px">
-      <template #header>
-        <div>强制下线确认</div>
-      </template>
-      <div>确认要强制下线此隧道吗？</div>
-      <template #action>
-        <NButton size="small" @click="showKickModal = false">取消</NButton>
-        <NButton size="small" type="warning" :loading="loading" @click="handleKickConfirm">确定</NButton>
-      </template>
-    </NModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NCard, NButton, NButtonGroup, NTag, NTable, NIcon, NModal, NInput, NDropdown, NForm, NFormItem, NSelect, NInputNumber, useMessage, type FormInst, NDivider, NSwitch, NText, NEmpty } from 'naive-ui'
+import { NCard, NButton, NButtonGroup, NTag, NIcon, NModal, NInput, NDropdown, NForm, NFormItem, NSelect, NInputNumber, useMessage, type FormInst, NDivider, NSwitch, NText, NEmpty, NDataTable, NSpace, type DropdownOption } from 'naive-ui'
 import { GridOutline, ListOutline, RefreshOutline, SearchOutline, InformationCircleOutline, CreateOutline, TrashOutline, PowerOutline, AddOutline, EllipsisHorizontalCircleOutline, PlayOutline } from '@vicons/ionicons5'
 import { AuthApi } from '../../shared/api/auth'
 import type { Proxy, UserNodeName } from '../../types'
@@ -490,7 +449,7 @@ const proxyToOperate = ref<Proxy | null>(null)
 
 const toggleModalTitle = computed(() => {
   if (!proxyToOperate.value) return ''
-  return proxyToOperate.value.isDisabled ? '启用确认' : '禁用确认'
+  return proxyToOperate.value.isDisabled ? '启用隧道' : '禁用隧道'
 })
 
 const toggleModalContent = computed(() => {
@@ -498,11 +457,12 @@ const toggleModalContent = computed(() => {
   return proxyToOperate.value.isDisabled ? '确认要启用此隧道吗？' : '确认要禁用此隧道吗？'
 })
 
-const dropdownOptions = (proxy: Proxy) => [
+const dropdownOptions = (proxy: Proxy): DropdownOption[] => [
   {
     label: '查看详情',
     key: 'view',
-    icon: renderIcon(InformationCircleOutline)
+    type: 'info',
+    icon: () => h(NIcon, null, { default: () => h(InformationCircleOutline) })
   },
   {
     type: 'divider',
@@ -511,12 +471,15 @@ const dropdownOptions = (proxy: Proxy) => [
   {
     label: '编辑',
     key: 'edit',
-    icon: renderIcon(CreateOutline)
+    type: 'primary',
+    icon: () => h(NIcon, null, { default: () => h(CreateOutline) })
   },
   {
     label: '强制下线',
     key: 'kickProxy',
-    icon: renderIcon(PowerOutline)
+    type: 'warning',
+    disabled: !proxy.isOnline,
+    icon: () => h(NIcon, null, { default: () => h(PowerOutline) })
   },
   {
     type: 'divider',
@@ -525,18 +488,37 @@ const dropdownOptions = (proxy: Proxy) => [
   {
     label: proxy.isDisabled ? '启用' : '禁用',
     key: 'toggle',
-    icon: renderIcon(PowerOutline)
+    type: proxy.isDisabled ? 'success' : 'warning',
+    icon: () => h(NIcon, null, { default: () => h(PowerOutline) })
   },
   {
     label: '删除',
     key: 'delete',
-    icon: renderIcon(TrashOutline)
+    type: 'error',
+    icon: () => h(NIcon, null, { default: () => h(TrashOutline) })
   }
 ]
 
-const handleToggleClick = (proxy: Proxy) => {
+const handleSelect = (key: string | number, proxy: Proxy) => {
   proxyToOperate.value = proxy
-  showToggleModal.value = true
+  switch (key) {
+    case 'view':
+      selectedProxy.value = proxy
+      showModal.value = true
+      break
+    case 'edit':
+      handleEdit(proxy)
+      break
+    case 'kickProxy':
+      showKickModal.value = true
+      break
+    case 'toggle':
+      showToggleModal.value = true
+      break
+    case 'delete':
+      showDeleteModal.value = true
+      break
+  }
 }
 
 const handleToggleConfirm = async () => {
@@ -614,45 +596,22 @@ const handleEditSubmit = () => {
 }
 
 const showDeleteModal = ref(false)
-const proxyToDelete = ref<Proxy | null>(null)
 
-const handleDeleteClick = (proxy: Proxy) => {
-  proxyToDelete.value = proxy
-  showDeleteModal.value = true
-}
-
-const handleDeleteConfirm = async () => {
-  if (!proxyToDelete.value) return
+const handleDeleteClick = async () => {
+  if (!proxyToOperate.value) return
   try {
-    await AuthApi.deleteProxy(proxyToDelete.value.proxyId)
+    loading.value = true
+    await AuthApi.deleteProxy(proxyToOperate.value.proxyId)
     message.success('删除隧道成功')
-    handleRefresh()
     showDeleteModal.value = false
+    handleRefresh()
   } catch (error: any) {
     message.error(error?.response?.data?.message || '删除隧道失败')
+  } finally {
+    loading.value = false
   }
 }
 
-const handleSelect = (key: string, proxy: Proxy) => {
-  switch (key) {
-    case 'view':
-      selectedProxy.value = proxy
-      showModal.value = true
-      break
-    case 'edit':
-      handleEdit(proxy)
-      break
-    case 'kickProxy':
-      handleKickClick(proxy)
-      break
-    case 'toggle':
-      handleToggleClick(proxy)
-      break
-    case 'delete':
-      handleDeleteClick(proxy)
-      break
-  }
-}
 const handleGetFreePortForEdit = async () => {
   try {
     gettingFreePort.value = true
@@ -672,6 +631,87 @@ const handleGetFreePortForEdit = async () => {
     gettingFreePort.value = false
   }
 }
+
+const columns = [
+  {
+    title: 'ID',
+    key: 'proxyId',
+    render(row) {
+      return h(NTag, { type: 'info', size: 'medium' }, { default: () => `# ${row.proxyId}` })
+    }
+  },
+  {
+    title: '名称',
+    key: 'proxyName',
+    render(row) {
+      return h('div', { style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, row.proxyName)
+    }
+  },
+  {
+    title: '类型',
+    key: 'proxyType',
+    render(row) {
+      return h('div', { style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, row.proxyType.toUpperCase())
+    }
+  },
+  {
+    title: '远程端口',
+    key: 'remotePort',
+    render(row) {
+      return h('div', { style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, row.remotePort)
+    }
+  },
+  {
+    title: '节点',
+    key: 'nodeId',
+    render(row) {
+      return h('div', { style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, getNodeLabel(row.nodeId))
+    }
+  },
+  {
+    title: '状态',
+    key: 'status',
+    render(row) {
+      return h(NSpace, { size: 4 }, {
+        default: () => [
+          h(NTag, {
+            type: row.isOnline ? 'success' : 'error',
+            size: 'small'
+          }, { default: () => row.isOnline ? '在线' : '离线' }),
+          row.isBanned && h(NTag, {
+            type: 'error',
+            size: 'small'
+          }, { default: () => '已封禁' }),
+          row.isDisabled && h(NTag, {
+            type: 'warning',
+            size: 'small'
+          }, { default: () => '已禁用' })
+        ].filter(Boolean)
+      })
+    }
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    render(row) {
+      return h(NDropdown, {
+        trigger: 'click',
+        options: dropdownOptions(row),
+        onSelect: (key: string) => handleSelect(key, row),
+        placement: 'bottom'
+      }, {
+        default: () => h(NButton, {
+          text: true,
+          style: 'display: flex; align-items: center;'
+        }, {
+          icon: () => h(NIcon, null, {
+            default: () => h(EllipsisHorizontalCircleOutline)
+          })
+        })
+      })
+    }
+  }
+]
 </script>
 
 <style lang="scss" scoped>
