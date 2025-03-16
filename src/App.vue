@@ -91,7 +91,7 @@ provide('theme', {
   toggleTheme
 })
 const collapsed = ref(false)
-const isMobile = ref(window.innerWidth <= 700)
+const isMobile = ref(window.innerWidth <= 768)
 const isLoggedIn = computed(() => {
   return !!localStorage.getItem('token')
 })
@@ -100,7 +100,7 @@ const contentStyle = computed(() => ({
 }))
 
 const handleResize = () => {
-  isMobile.value = window.innerWidth <= 700
+  isMobile.value = window.innerWidth <= 768
 }
 
 onMounted(() => {

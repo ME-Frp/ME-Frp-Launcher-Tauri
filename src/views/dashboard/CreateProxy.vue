@@ -460,10 +460,10 @@ const init = async () => {
 
 // 修改初始化调用
 init()
-const isMobile = ref(window.innerWidth <= 700)
+const isMobile = ref(window.innerWidth <= 768)
 
 const handleResize = () => {
-  isMobile.value = window.innerWidth <= 700
+  isMobile.value = window.innerWidth <= 768
 }
 
 onMounted(() => {

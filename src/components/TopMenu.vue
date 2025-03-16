@@ -80,7 +80,7 @@ const menuOptions = ref(getMenuOptions())
 const dialog = useDialog()
 const message = useMessage()
 const showMobileMenu = ref(false)
-const isMobile = ref(window.innerWidth <= 700)
+const isMobile = ref(window.innerWidth <= 768)
 const unMaximizedSize = ref(new PhysicalSize(0, 0))
 
 // 判断是否已登录
@@ -145,7 +145,7 @@ const currentKey = computed(() => {
 })
 
 const handleResize = async () => {
-  isMobile.value = window.innerWidth <= 700
+  isMobile.value = window.innerWidth <= 768
   if (!getCurrentWindow().isMaximized()) {
     unMaximizedSize.value = await getCurrentWindow().outerSize()
   }
